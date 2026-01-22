@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">验光系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <nav id="main-nav">
+        <a data-target="calibration" data-i18n="nav.calibration">尺寸校准</a>
+        <a data-target="visual-acuity" data-i18n="nav.visualAcuity">E视力表</a>
+        <a data-target="duochrome" data-i18n="nav.duochrome">红绿精调</a>
+        <a data-target="astigmatism" data-i18n="nav.astigmatism">散光盘</a>
+        <a data-target="honeycomb" data-i18n="nav.honeycomb">蜂窝视标</a>
+        <a data-target="cross" data-i18n="nav.cross">交叉视标</a>
+        <span id="lang-switcher" data-i18n="nav.langSwitch">EN</span>
+    </nav>
+
+    <!-- 1. 校准视图 -->
+    <div id="calibration" class="view">
+        <h2 data-i18n="calibration.title">物理尺寸校准</h2>
+        <div class="controls" style="margin-bottom:20px;">
+            <label>
+                <span data-i18n="calibration.testDistance">测试距离:</span>
+                <select id="cal-distance">
+                    <option value="3">3 <span data-i18n="calibration.meters">米</span></option>
+                    <option value="5" selected>5 <span data-i18n="calibration.meters">米</span></option>
+                    <option value="custom" data-i18n="calibration.custom">自定义</option>
+                </select>
+            </label>
+            <input type="number" id="cal-distance-custom" value="5" step="0.5" min="0.5" max="10"
+                style="width:60px; display:none;" placeholder="米">
+        </div>
+        <p data-i18n="calibration.instruction">请拖动滑块，使蓝色矩形等同信用卡大小 (85.6mm x 54mm)</p>
+        <div id="calibration-card" data-i18n="calibration.cardText">CREDIT CARD</div>
+        <div class="controls" style="margin-top:20px;">
+            <input type="range" id="ppi-slider" min="50" max="250" value="100">
+            <span id="ppi-text">100%</span>
+        </div>
+        <button onclick="saveCalibration()" data-i18n="calibration.saveAndContinue">保存校准并继续</button>
+    </div>
+
+    <!-- 2. E视力表视图 -->
+    <div id="visual-acuity" class="view">
+        <div class="controls"
+            style="position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:100; opacity: 0.8; background: #f4f4f4; padding: 10px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <label>
+                <span data-i18n="va.startAcuity">起始视力:</span>
+                <input type="number" id="va-start" value="0.7" step="0.1" style="width:50px;" oninput="renderVA()">
+            </label>
+            <button onclick="renderVA()" data-i18n="va.refresh">刷新随机方向</button>
+        </div>
+        <div id="va-container"></div>
+    </div>
+
+    <!-- 3. 散光盘视图 -->
+    <div id="astigmatism" class="view">
+        <div class="controls"
+            style="position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:100; opacity: 0.8; background: #f4f4f4; padding: 10px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <label>
+                <span data-i18n="astig.diameter">直径 (cm):</span>
+                <input type="number" id="astig-diameter" value="20" step="1" style="width:70px;">
+            </label>
+            <label>
+                <span data-i18n="astig.dashLength">虚线段长 (mm):</span>
+                <input type="number" id="astig-dash" value="5" step="1" style="width:70px;">
+            </label>
+            <span id="astig-dash-val">5</span>
+            <label>
+                <span data-i18n="astig.lineWeight">线条粗细 (mm):</span>
+                <input type="number" id="astig-weight" value="0.2" step="0.1" style="width:70px;">
+            </label>
+            <span id="astig-weight-val">0.2</span>
+            <label>
+                <span data-i18n="astig.fontSize">字体大小 (px):</span>
+                <input type="range" id="astig-font-size" min="10" max="100" value="30" step="1" oninput="renderAstig()">
+                <span id="astig-font-val">30</span>
+            </label>
+            <button onclick="renderAstig()" data-i18n="astig.refresh">刷新散光盘</button>
+        </div>
+        <div id="astig-container"></div>
+    </div>
+
+    <!-- 4. 红绿精调视图 -->
+    <div id="duochrome" class="view">
+        <div class="controls"
+            style="position:fixed; top:60px; z-index:100; opacity: 0.8; background: #f4f4f4; padding: 10px; border-radius: 8px;">
+            <label>
+                <span data-i18n="duo.startAcuity">起始视力:</span>
+                <input type="number" id="duo-start" value="0.6" step="0.1" min="0.1" max="1.0" style="width:60px;"
+                    oninput="renderDuo()">
+            </label>
+            <button onclick="renderDuo()" data-i18n="duo.randomize">随机换向</button>
+        </div>
+        <div class="duochrome-split" style="position: relative;">
+            <div class="side" style="background:#FF0000;" id="duo-red"></div>
+            <div class="side" style="background:#00FF00;" id="duo-green"></div>
+            <div id="duo-grid"
+                style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;">
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 蜂窝视标视图 -->
+    <div id="honeycomb" class="view">
+        <div class="controls"
+            style="position:fixed; top:60px; z-index:100; opacity: 0.8; background: #f4f4f4; padding: 10px; border-radius: 8px;">
+            <label>
+                <span data-i18n="hc.diameter">圆形直径 (cm):</span>
+                <input type="number" id="hc-diameter" value="20" step="1" min="1" max="50" style="width:70px;"
+                    oninput="renderHoneycomb()">
+            </label>
+            <label>
+                <span data-i18n="hc.dotSize">黑点直径 (mm):</span>
+                <input type="number" id="hc-dot-size" value="10" step="1" min="1" max="20" style="width:70px;"
+                    oninput="renderHoneycomb()">
+            </label>
+            <button onclick="renderHoneycomb()" data-i18n="hc.refresh">刷新蜂窝视标</button>
+        </div>
+        <div id="hc-container"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black;"></div>
+    </div>
+
+    <!-- 6. 交叉视标视图 -->
+    <div id="cross" class="view">
+        <div class="controls"
+            style="position:fixed; top:60px; z-index:100; opacity: 0.8; background: #f4f4f4; padding: 10px; border-radius: 8px;">
+            <label>
+                <span data-i18n="cross.diameter">圆形直径 (cm):</span>
+                <input type="number" id="cross-diameter" value="20" step="1" min="1" max="50" style="width:70px;"
+                    oninput="renderCross()">
+            </label>
+            <label>
+                <span data-i18n="cross.lineWidth">线宽 (px):</span>
+                <input type="number" id="cross-width" value="2" step="1.5" min="1" max="10" style="width:70px;"
+                    oninput="renderCross()">
+            </label>
+            <label>
+                <span data-i18n="cross.spacing">线距 (mm):</span>
+                <input type="number" id="cross-spacing" value="8" step="1" min="5" max="30" style="width:70px;"
+                    oninput="renderCross()">
+            </label>
+            <button onclick="renderCross()" data-i18n="cross.refresh">刷新交叉视标</button>
+        </div>
+        <div id="cross-container"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black;"></div>
+    </div>
+
+    <!-- 先加载 i18n，再加载主逻辑 -->
+    <script src="i18n.js"></script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>
