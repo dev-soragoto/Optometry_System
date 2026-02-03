@@ -8,7 +8,7 @@
 
 ### 📋 项目简介
 
-基于Web的验光系统，提供全面的视力检测工具。采用纯前端技术实现，可在浏览器中直接运行。
+基于Web的验光系统，提供基础的视力检测工具。采用纯前端技术实现，可在浏览器中直接运行。
 
 ### ✨ 功能模块
 
@@ -31,7 +31,7 @@
 
 ### 📋 Overview
 
-A web-based optometry system providing comprehensive vision testing tools. Built with pure frontend technologies and runs directly in browsers.
+A web-based optometry system providing basic vision testing tools. Built with pure frontend technologies and runs directly in browsers.
 
 ### ✨ Features
 
